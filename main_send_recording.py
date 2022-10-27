@@ -5,7 +5,7 @@ import glob
 import os
 import json
 import sys
-from IPython.core import ultratb
+from IPython.core import ultratb 
 sys.excepthook = ultratb.FormattedTB(mode='Verbose', color_scheme='Linux', call_pdb=False) # Errores en color
 
 start_time = time.time()

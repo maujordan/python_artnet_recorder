@@ -6,5 +6,6 @@
 		"universes":5,
 		"pixels":30,
 		"subnet": 0
-	}
+	},
+	"scene_to_play":1
 }
