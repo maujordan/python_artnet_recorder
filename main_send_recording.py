@@ -11,11 +11,13 @@ sys.excepthook = ultratb.FormattedTB(mode='Verbose', color_scheme='Linux', call_
 start_time = time.time()
 
 # Files de configuracion
-path = os.path.dirname(__file__) # Path en el que estamos
-data = json.load(open(os.path.join(path, 'config.json')))
+dir = os.path.dirname(__file__) # Path en el que estamos
+data = json.load(open(os.path.join(dir, 'config.json')))
 selected_scene = data['selected_scene'] # Escena a reproducir
-recordings_path = path + f"/recordings/scene_{ selected_scene }"  # Path donde se encuentran los recordings
-config_universes = data["settings"]["universes"] # Obteniendo cantidad de universos en esa grabacion
+recordings_path = dir + f"/recordings/scene_{ selected_scene }"  # Path donde se encuentran los recordings
+
+# Obteniendo la cantidad de universos que vamos a lanzar 
+config_universes = len(os.listdir(recordings_path)) # cantidad de archivos dentro del recording_path
 
 # Valores necesarios para mandar artner
 target_ip = data["settings"]["ip_address"]  # IP a la que enviaremos
@@ -23,9 +25,9 @@ packet_size = 512           # Tamaño del packet
 framerate  = 30            # Framerate
 #recordings_path = '/home/maurojordan/Documents/ws2812-over-artnet/recordings/' # Path donde se guardan los recordings
 
-# Fucion para leer el csv que contiene la grabacion. Recibe el path al CSV y regresa la grabacion en forma de lista de listas
-def read_recording(path: str):
-    with open(path, newline='') as f:
+# Fucion para leer el csv que contiene la grabacion. Recibe el dir al CSV y regresa la grabacion en forma de lista de listas
+def read_recording(dir: str):
+    with open(dir, newline='') as f:
         reader = csv.reader(f)
         list_recording = list(reader)
 
@@ -58,7 +60,7 @@ for i, file_path in enumerate(list_recording_names): # For para leer todos los a
     if i == config_universes:
         break
     exec(f"recording{ i } = read_recording('{ file_path }')")
-    print(f"Got recording { i }!")
+    print(f"Got recording for univers: { i }!")
 
 
 
