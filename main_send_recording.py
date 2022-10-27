@@ -5,16 +5,17 @@ import glob
 import os
 import json
 import sys
-from IPython.core import ultratb 
+from IPython.core import ultratb    
 sys.excepthook = ultratb.FormattedTB(mode='Verbose', color_scheme='Linux', call_pdb=False) # Errores en color
 
 start_time = time.time()
 
 # Files de configuracion
 path = os.path.dirname(__file__) # Path en el que estamos
-recordings_path = path + '/recordings' # Path donde se encuentran los recordings
 data = json.load(open(os.path.join(path, 'config.json')))
-config_universes = data["settings"]["universes"] # Obteniendo cantidad de universos
+selected_scene = data['selected_scene'] # Escena a reproducir
+recordings_path = path + f"/recordings/scene_{ selected_scene }"  # Path donde se encuentran los recordings
+config_universes = data["settings"]["universes"] # Obteniendo cantidad de universos en esa grabacion
 
 # Valores necesarios para mandar artner
 target_ip = data["settings"]["ip_address"]  # IP a la que enviaremos
@@ -79,4 +80,3 @@ for i in range(config_universes):
 
 end_time = time.time()
 print(f"Done!!! Execution time: { round((end_time - start_time)/60, 1) } minutes")
-
