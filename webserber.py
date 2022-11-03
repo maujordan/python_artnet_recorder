@@ -5,6 +5,13 @@ import socket
 import json
 import main_send_recording
 
+# Nombre del directorio en el que estamos trabajando
+dirname = os.path.dirname(__file__) + "/"
+
+# Recordings path name
+recordings_path_name = "/recordings"
+
+
 # Obteniendo ip
 def get_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -26,7 +33,6 @@ host_port = 8000
 def change_congig_file_value(level:list, value):
     try:
         # Obteniendo nombre de directorio
-        dirname = os.path.dirname(__file__) + "/"
         config_file_name = "config.json"
 
         # Leyendo config file y guardandolo en una variable
@@ -43,7 +49,7 @@ def change_congig_file_value(level:list, value):
         exec(f"{ string_to_execute } = { value }")
 
         # Guardando la variable en el file de config
-        a_file = open(config_file_name, "w")
+        a_file = open(dirname + config_file_name, "w")
         json.dump(json_cofig, a_file, indent=3)
         a_file.close()
         print(f"Succesful changed:\n{ string_to_execute } = { value }")
@@ -107,7 +113,18 @@ class MyServer(BaseHTTPRequestHandler):
 
         # Codigo para reproducir una grabación
         if post_data[0] == 'play_recording':
+            
             selected_scene = post_data[1]
+            # Ajustamos numero de universos a reproducir en el config file
+                # Revisamos cuantos universos hay grabados en la escena
+            scene_directory = dirname + recordings_path_name + f"/scene_{ selected_scene }"
+            lst = os.listdir(scene_directory) # your directory path
+            number_universes_in_scene = len(lst)
+                # Cambiamos el config file a la cantidad de universos
+            change_congig_file_value(["settings", "universes"], number_universes_in_scene)
+
+
+            # Cambiamos la escena a reproducir en el config file
             change_congig_file_value(["selected_scene"], int(selected_scene)) # Cambiando config file
             main_send_recording.run() # Corriendo script
             
