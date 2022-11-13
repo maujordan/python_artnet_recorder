@@ -1,34 +1,25 @@
-from stupidArtnet import StupidArtnetServer
-import json
-import os
-from csv import writer
-import sys
-from IPython.core import ultratb
-sys.excepthook = ultratb.FormattedTB(mode='Verbose', color_scheme='Linux', call_pdb=False) # Errores en color
+# uvicorn app:app --> Inicia el servidor de nombre app
+# uvicorn app:app --reload --> Cada vez que guarda el archivo refresca el servidor uvicorn 
 
-# Path to save the recordings
-# recordings_path = '/home/maurojordan/Documents/python_artnet_recorder/recordings'
+from fastapi import FastAPI, Request
+from pydantic import BaseModel
+from typing import Text, Optional # Objetos de tipo texto
+from datetime import datetime
+from uuid import uuid4 as uuid
+from utils.utils import *
+from main_send_recording import broadcast_recording
+from inspect import signature
 
-# Files de configuracion
+
 dirname = os.path.dirname(__file__)
-data = json.load(open(os.path.join(dirname, 'config.json')))
-selected_scene = data['selected_scene'] # Escena a grabar
-recordings_path = dirname + f"/recordings/scene_{ selected_scene }" 
+config_file_name = 'config.json'
+config_path = dirname + '/' + config_file_name
+config_path = os.path.join(dirname, config_file_name)
 
+# Funcion que lee del config si seguimos grabando
+def keep_recording(config_path: str):
+    # Files de configuracion
+    data = json.load(open(config_path))
+    return data["record"]
 
-
-
-import os
-
-# Check whether the specified path exists or not
-
-path = os.path.dirname(__file__) # Path en el que estamos
-data = json.load(open(os.path.join(path, 'config.json')))
-selected_scene = data['selected_scene'] # Escena a grabar
-recordings_path = dirname + f"/recordings/scene_{ selected_scene }"  # Path donde se encuentran los recordings
-
-
-recording_path_exists = os.path.exists(recordings_path) # verificando si el path existe
-if recording_path_exists == False:
-    print(f"La grabacion { selected_scene } no existe. Por favor crearla")
-    exit()
+print(keep_recording(config_path))
