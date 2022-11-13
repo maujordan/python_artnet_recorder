@@ -1,11 +1,10 @@
 {
-   "version": "1.1",
-   "ignoreUpdates": false,
+   "selected_scene": 0,
+   "record": true,
    "settings": {
-      "ip_address": "192.168.1.67",
+      "ip_address": "192.168.1.72",
       "universes": 3,
       "pixels": 170,
       "subnet": 0
-   },
-   "selected_scene": 3
+   }
 }
