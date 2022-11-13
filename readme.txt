@@ -1,0 +1,1 @@
+Iniciar el API app via terminal: uvicorn app:recorder_app --reload
