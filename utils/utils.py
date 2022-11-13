@@ -1,14 +1,14 @@
 import os
 import json
 import time
+import asyncio
 
 
 # Funcion para cambiar algun valor del config.json
     # Recibe: elemento que vamos a cambiar en una lista, el config file path y el valor que vamos que insertaremos
-def change_congig_file_value(level:list, config_path:str, value):
+def change_json_file_value(level:list, config_path:str, value):
     try:
-        # Obteniendo nombre de directorio
-        config_path = "config.json"
+        
 
         # Leyendo config file y guardandolo en una variable
         a_file = open(config_path, "r")
@@ -58,31 +58,34 @@ def get_function_number_of_arguments(function):
     return(len(params))
 
 # Conocer el estado del request ¿El request esta corriendo? 1 Recibe lista de estados, el url del request y el numero de argumentos del request
-def request_is_running(status_list: list, request_url:str, arguments_number: int):
-    url_without_params = request_url.rsplit('/', arguments_number)[0]
+def request_is_running(status_list: list, function_name: str):
     # Si el url sin parametros esta en la lista, entonces esta corriendo
-    if url_without_params in status_list:
+    if function_name in status_list:
         return True
     else:
         return False
 
 # Cambiar el estado de la lista de reuests
-def set_request_status(status_list: list, request_url:str, arguments_number: int, running: bool):
-    url_without_params = request_url.rsplit('/', arguments_number)[0]
+def set_request_status(status_list: list, function_name:str, running: bool):
     if running == True:
-        status_list.append(url_without_params)
-    elif running == False and url_without_params in status_list:
-        status_list.remove(url_without_params)
+        status_list.append(function_name)
+    elif running == False and function_name in status_list:
+        status_list.remove(function_name)
     return status_list
 
-def test_wait():
+async def test_wait():
     for i in range(10):
         print(i)
-        time.sleep(1)
+        await time.sleep(1)
 
 # Funcion que lee del config si seguimos grabando
 def keep_recording(config_path: str):
     # Files de configuracion
     data = json.load(open(config_path))
     return data["record"]
+
+# Obtiene el config_file
+def get_json_file(path):
+    json_file = json.load(open(path)) # Config json
+    return json_file
 
