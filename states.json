@@ -2,5 +2,6 @@
    "recordings_info": false,
    "read_recording": false,
    "new_recording": false,
-   "stop_recording": false
+   "stop_recording": false,
+   "stop_broadcasting": false
 }

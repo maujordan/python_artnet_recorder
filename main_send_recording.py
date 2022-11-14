@@ -5,11 +5,13 @@ import glob
 import os
 import json
 import sys
+from utils.utils import *
 from IPython.core import ultratb    
 sys.excepthook = ultratb.FormattedTB(mode='Verbose', color_scheme='Linux', call_pdb=False) # Errores en color
 
 
-def broadcast_recording():
+
+def broadcast_recording(function_name, states_path):
 
     try:
         start_time = time.time()
@@ -79,9 +81,20 @@ def broadcast_recording():
 
         print("Broadcastings...")
         # Cargamos cada frame en cada uno de los universos
+        read_recording_state = True
         for i in range(min_packets):
+            # Leemos el estado de la grabacion antes de entrar en el loop
+            try:
+                read_recording_state = get_json_file(states_path)["read_recording"]
+                pass
+            except:
+                pass
             for j in range(config_universes):
-                exec(f"artnet_object{ j }.set(list(map(int, recording{ j }[{ i }])))")
+                exec(f"artnet_object{ j }.set(list(map(int, recording{ j }[{ i }])))")  
+            # Si el estado de la grabación esta en false, paramos la grabacion
+            if read_recording_state  == False:
+                print("Stopping broadcast...")
+                break
             time.sleep(1/framerate) # 30 HZ
 
         # Mandando a 0 todos los canales
@@ -93,8 +106,8 @@ def broadcast_recording():
         end_time = time.time()
         print(f"Done!!! Execution time: { round((end_time - start_time)/60, 1) } minutes")
     except Exception as e:
-        e = str(e)
-        print(type(e))
-        return {"error": str(e), "function": "broadcast_recording()" }
+        print("There was an error when trying to play the recording:\n", e)
+        exit()
     
-    return {"message:" "success"}
+    change_json_file_value([function_name], states_path, False) # Cambiando estado de reproducción
+    return

@@ -8,15 +8,22 @@ from IPython.core import ultratb
 sys.excepthook = ultratb.FormattedTB(mode='Verbose', color_scheme='Linux', call_pdb=False) # Errores en color
 
 
-# Files de configuracion
-dirname = os.path.dirname(__file__)
+# Files and folders names
 config_file_name = 'config.json'
-config_path = dirname + '/' + config_file_name
-data = json.load(open(os.path.join(dirname, config_file_name)))
-selected_scene = data['selected_scene'] # Escena a grabar
-scene_path = dirname + f"/recordings/scene_{ selected_scene }" 
-config_universes = data["settings"]["universes"] # Obteniendo cantidad de universos
-states_path = os.path.join(dirname, "states.json")
+states_file_name = "states.json" # ombre del archivo que guarda estados
+
+# Paths
+dir_path = os.path.dirname(__file__)
+config_path = dir_path + '/' + config_file_name
+states_path = os.path.join(dir_path, states_file_name)
+
+# Objetos
+config_json = json.load(open(os.path.join(dir_path, config_file_name)))
+selected_scene = config_json['selected_scene'] # Escena a grabar
+config_universes = config_json["settings"]["universes"] # Obteniendo cantidad de universos
+scene_path = dir_path + f"/recordings/scene_{ selected_scene }" 
+
+
 
 
 # Funcion principal

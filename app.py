@@ -64,22 +64,26 @@ def recordings_info(request: Request):
 
 # Creando petición get para reproducir una grabación
 @recorder_app.get('/play_recording/{recording_number}')
-def read_recording(recording_number: str, request: Request):
+def read_recording(recording_number: str, request: Request, brackground_tasks: BackgroundTasks):
+    
+    global states_path
     function_name = inspect.stack()[0][3]
     
-    # Begin: manejo de estados
+    # Revisamos que no se este corriendo ya esta función
     if get_json_file(states_path)[function_name] == True:
         print("This request is already running, please wait")
         return {"message": "This request is already running, please wait"}
-    change_json_file_value([function_name], states_path, True)
     
-    change_json_file_value(level = ["selected_scene"], config_path = config_path, value=recording_number)
-    message_to_return = None
-    message_to_return = broadcast_recording()
+    # Revisamos que no se este grabando nada
+    elif get_json_file(states_path)["new_recording"] == False: 
+        change_json_file_value([function_name], states_path, True) # Cambiando estado de los estados a true
+        change_json_file_value(level = ["selected_scene"], config_path = config_path, value=recording_number) # Seleccionando escena a reproducir
+        brackground_tasks.add_task(broadcast_recording, function_name, states_path) # Reproduciendo escena
+        return {"Playing recording:": recording_number}
     
-
-    change_json_file_value([function_name], states_path, False)
-    return {"recording_to_play": recording_number, "function return": message_to_return}
+    # Cualquier otro caso es error
+    else:
+        return {"Error:": "There was an error while trying to read and broadcast recording"}
 
 
 @recorder_app.post('/new_recording/')
@@ -87,22 +91,27 @@ async def new_recording(scene_to_record: scene, request: Request, brackground_ta
     function_name = inspect.stack()[0][3]
     global config_path
 
-    # Begin: manejo de estados
-    if get_json_file(states_path)[function_name] == True: # Revisa si el request ya esta corriendo
+    # Revisa si el request ya esta corriendo
+    if get_json_file(states_path)[function_name] == True : 
         print("There is a scene being recorder, please wait!!!")
         return {"message": "There is a scene being recorder, please wait!!!"}
-    change_json_file_value([function_name], states_path, True)
     
-    scene_to_record = scene_to_record.dict()
-    change_json_file_value(level = ["selected_scene"], config_path=config_path, value=scene_to_record["scene_number"])
-    change_json_file_value(level = ["settings", "universes"], config_path=config_path, value=scene_to_record["universes"])
-    brackground_tasks.add_task(record_artnet)
-    
-    return {"message": "Recording..."}
+    # revisamos que no se este reproducioendo una grabacion
+    elif get_json_file(states_path)[function_name] == False: 
+        
+        change_json_file_value([function_name], states_path, True)
+        scene_to_record = scene_to_record.dict()
+        change_json_file_value(level = ["selected_scene"], config_path=config_path, value=scene_to_record["scene_number"])
+        change_json_file_value(level = ["settings", "universes"], config_path=config_path, value=scene_to_record["universes"])
+        brackground_tasks.add_task(record_artnet)
+
+        return {"message": "Recording..."}
+    else:
+        return {"error": "Couldn´t record"}
 
 # Cuando hay una grabacion en curso, podemos detenerla
 @recorder_app.post('/stop_recording/')
-async def stop_recording(request: Request):
+async def stop_recording():
     
     function_name = inspect.stack()[0][3]
 
@@ -123,9 +132,28 @@ async def stop_recording(request: Request):
     change_json_file_value([function_name], states_path, False)
     return response
 
+# Para parar una reproducción de escenas
+@recorder_app.post('/stop_broadcasting/')
+async def stop_broadcasting():
+    
+    function_name = inspect.stack()[0][3]
+
+    # Revisamos que no se este corriendo la funcion
+    if get_json_file(states_path)[function_name] == True:
+        print("This request is already running, please wait")
+        return {"message": "This request is already running, please wait"}
+    else: 
+        # Si se esta reproduciendo algo entonces lo paramos
+        if get_json_file(states_path)["read_recording"] == True:
+            change_json_file_value(["read_recording"], states_path, False)
+            response = {"message": "Stopped recording"}
+        else:
+            response = {"message": "There is nothing being recorded"}
+
+    return response
 
 
 
 
 if __name__ == '__main__':
-    uvicorn.run(recorder_app, host="0.0.0.0", port=8000)
+    uvicorn.run("app:recorder_app", host="0.0.0.0", port=8000, reload=True)
