@@ -8,37 +8,20 @@ from IPython.core import ultratb
 sys.excepthook = ultratb.FormattedTB(mode='Verbose', color_scheme='Linux', call_pdb=False) # Errores en color
 
 
-# Files de configuracion
-dirname = os.path.dirname(__file__)
+# Files and folders names
 config_file_name = 'config.json'
-config_path = dirname + '/' + config_file_name
-data = json.load(open(os.path.join(dirname, config_file_name)))
-selected_scene = data['selected_scene'] # Escena a grabar
-scene_path = dirname + f"/recordings/scene_{ selected_scene }" 
-config_universes = data["settings"]["universes"] # Obteniendo cantidad de universos
-
-# Si el path de la grabación no existe, lo creamos
-def check_if_scene_path_exists(scene_path: str):
-    recording_path_exists = os.path.exists(scene_path) # verificando si el path existe
-    if recording_path_exists == False:
-        os.makedirs(scene_path)
-        print(f"The new is created at: \n \t{ scene_path }")
-    return
-
-# Función para appendear una lista en un csv. Recibe el nombre del archivo a appendear y la lista a appendear
-def save_in_csv(list_to_append, output_name = "out.csv"):
-	# from csv import writer
-	with open(output_name, 'a') as f_object:
-		writer_object = writer(f_object)
-		writer_object.writerow(list_to_append)
-		f_object.close() # Cerramos file
+states_file_name = "states.json" # ombre del archivo que guarda estados
 
 
+# Funcion principal
+    # Recibe el status list y lo regresa cuando acabe de correr
 def record_artnet():
+    
+    get_globals()
 
     check_if_scene_path_exists(scene_path)
-
-
+    # Poniendo el estado de la grabacion en el config file en true
+    change_json_file_value(level=["currently_rcording"], config_path=config_path, value=True) 
 
     # Creando callback functions para escribir en los CSV
     for i in range(config_universes):
@@ -68,15 +51,60 @@ u{ i }_listener = server.register_listener(universe={ i }, callback_function=cal
 
     
     
-    change_congig_file_value(level=["record"], config_path=config_path, value=True) # Poniendo recording en true en config_file
     go_on = True
     while go_on == True:
-        go_on = keep_recording(config_path=config_path)
+        try:
+            go_on = get_json_file(states_path)["new_recording"]
+        except:
+            pass
         if go_on == False:
             print("\nParamos grabacion")
             server.delete_all_listener()
+            change_json_file_value(level=["new_recording"], config_path=states_path, value=False) # Cambiando el estado de la grabacion a false
     del server
     
+    
     return
+# END: Funcion principal
+
+
+
+# Funcones secundarias
+    # Si el path de la grabación no existe, lo creamos
+def check_if_scene_path_exists(scene_path: str):
+    get_globals()
+    recording_path_exists = os.path.exists(scene_path) # verificando si el path existe
+    if recording_path_exists == False:
+        os.makedirs(scene_path)
+        print(f"The new is created at: \n \t{ scene_path }")
+    return
+
+# Función para appendear una lista en un csv. Recibe el nombre del archivo a appendear y la lista a appendear
+def save_in_csv(list_to_append, output_name = "out.csv"):
+	# from csv import writer
+	with open(output_name, 'a') as f_object:
+		writer_object = writer(f_object)
+		writer_object.writerow(list_to_append)
+		f_object.close() # Cerramos file
+
+
+def get_globals():
+    """
+    Crea las variables globales que se necesitan para operar
+    """
+    global config_file_name, states_file_name, dir_path, config_path, states_path, config_json, selected_scene, config_universes, scene_path
+
+    
+
+    # Paths
+    dir_path = os.path.dirname(__file__)
+    config_path = dir_path + '/' + config_file_name
+    states_path = os.path.join(dir_path, states_file_name)
+
+    # Objetos
+    config_json = json.load(open(os.path.join(dir_path, config_file_name)))
+    selected_scene = config_json['selected_scene'] # Escena a grabar
+    config_universes = config_json["settings"]["universes"] # Obteniendo cantidad de universos
+    scene_path = dir_path + f"/recordings/scene_{ selected_scene }" 
 
 #record_artnet()

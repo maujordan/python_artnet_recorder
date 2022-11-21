@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<body>
+    <div class="ui segment">
+        <div class="ui stackable menu">
+            <a class="item">
+                <button class="massive ui teal button" onclick="go_to_page('/broadcast_page')">
+                    <i class="rss icon"></i>
+                    Broadcast
+                </button>
+            </a>
+            <a class="item">
+                <button class="massive ui orange button" onclick="go_to_page('/record_page')">
+                    <i class="video icon"></i>
+                    Record new scene
+                </button>
+            </a>
+            
+            
+        </div>
+    </div>
+</body>
+
+{% endblock %}
