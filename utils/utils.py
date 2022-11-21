@@ -44,7 +44,7 @@ def get_recordings_info(recordings_path: str):
         recordings_dir["info"] = "recording index: amount of universes"
         recordings_dir["content"] = {}
         for i, scene in enumerate(recordings_list):
-            recordings_dir["content"][i] = len(os.listdir(recordings_path + '/' + scene))
+            recordings_dir["content"][scene[len(scene)-1]] = len(os.listdir(recordings_path + '/' + scene))
         return recordings_dir
     
     except Exception as e:

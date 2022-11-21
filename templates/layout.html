@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html >
+<head>
+    <title>Kyber Artnet Recorder</title>
+    <link rel="stylesheet" href="../static/Semantic-UI-CSS-master/semantic.min.css">
+    <script src="../static/jquery-3.6.1.min.js"></script>
+    <script src="../static/Semantic-UI-CSS-master/semantic.min.js"></script>
+    <script src="../static/my_js_functions.js"></script>
+</head>
+<body>
+    <div class="ui container">
+        <h1 class="ui massive header" onclick="go_to_page('/')">
+            <img class="ui massive centered image" src="/static/images/kyber_header_logo.png" onclick="go_to_page('/')">
+            <div class="content">
+                Artnet Recorder
+            </div>
+        </h1>
+        
+        {% block content %}
+        {% endblock %}
+    </div>
+    
+    
+</body>      
+
+</html>

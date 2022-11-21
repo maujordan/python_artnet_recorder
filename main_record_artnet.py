@@ -12,23 +12,12 @@ sys.excepthook = ultratb.FormattedTB(mode='Verbose', color_scheme='Linux', call_
 config_file_name = 'config.json'
 states_file_name = "states.json" # ombre del archivo que guarda estados
 
-# Paths
-dir_path = os.path.dirname(__file__)
-config_path = dir_path + '/' + config_file_name
-states_path = os.path.join(dir_path, states_file_name)
-
-# Objetos
-config_json = json.load(open(os.path.join(dir_path, config_file_name)))
-selected_scene = config_json['selected_scene'] # Escena a grabar
-config_universes = config_json["settings"]["universes"] # Obteniendo cantidad de universos
-scene_path = dir_path + f"/recordings/scene_{ selected_scene }" 
-
-
-
 
 # Funcion principal
     # Recibe el status list y lo regresa cuando acabe de correr
 def record_artnet():
+    
+    get_globals()
 
     check_if_scene_path_exists(scene_path)
     # Poniendo el estado de la grabacion en el config file en true
@@ -74,6 +63,7 @@ u{ i }_listener = server.register_listener(universe={ i }, callback_function=cal
             change_json_file_value(level=["new_recording"], config_path=states_path, value=False) # Cambiando el estado de la grabacion a false
     del server
     
+    
     return
 # END: Funcion principal
 
@@ -82,6 +72,7 @@ u{ i }_listener = server.register_listener(universe={ i }, callback_function=cal
 # Funcones secundarias
     # Si el path de la grabación no existe, lo creamos
 def check_if_scene_path_exists(scene_path: str):
+    get_globals()
     recording_path_exists = os.path.exists(scene_path) # verificando si el path existe
     if recording_path_exists == False:
         os.makedirs(scene_path)
@@ -97,4 +88,23 @@ def save_in_csv(list_to_append, output_name = "out.csv"):
 		f_object.close() # Cerramos file
 
 
-# record_artnet()
+def get_globals():
+    """
+    Crea las variables globales que se necesitan para operar
+    """
+    global config_file_name, states_file_name, dir_path, config_path, states_path, config_json, selected_scene, config_universes, scene_path
+
+    
+
+    # Paths
+    dir_path = os.path.dirname(__file__)
+    config_path = dir_path + '/' + config_file_name
+    states_path = os.path.join(dir_path, states_file_name)
+
+    # Objetos
+    config_json = json.load(open(os.path.join(dir_path, config_file_name)))
+    selected_scene = config_json['selected_scene'] # Escena a grabar
+    config_universes = config_json["settings"]["universes"] # Obteniendo cantidad de universos
+    scene_path = dir_path + f"/recordings/scene_{ selected_scene }" 
+
+#record_artnet()

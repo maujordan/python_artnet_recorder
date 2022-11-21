@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<table class="ui celled padded table">
+    <thead>
+        <tr>
+            <th class="center aligned", >Scene</th>
+            <th class="center aligned", >Universes</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for key, value in recordings_info.items() %}
+        {% if value > 0 %}
+        <tr>
+            <td class="center aligned">
+                <button class="ui primary button" value="{{ key }}" onclick="play_scene(value)">
+                    <i class="play icon"></i> Scene no. {{ key }}
+                </button>
+            </td>
+            <td class="center aligned"> {{ value }} universes </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+        
+    </tbody>
+    <tfoot>
+        <tr><th colspan="5">
+            <button class="ui red button" onclick="stop_broadcast()">
+                <i class="stop icon"></i> Stop
+            </button>
+        </th>
+        
+    </tr></tfoot>
+    
+</table>
+
+{% endblock %}

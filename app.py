@@ -1,7 +1,11 @@
 # uvicorn app:app --> Inicia el servidor de nombre app
 # uvicorn app:app --reload --> Cada vez que guarda el archivo refresca el servidor uvicorn 
+# 
 
-from fastapi import FastAPI, Request, BackgroundTasks
+from fastapi import FastAPI, Request, BackgroundTasks, Depends
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 from pydantic import BaseModel
 from typing import Text, Optional # Objetos de tipo texto
 from datetime import datetime
@@ -17,16 +21,22 @@ import inspect
 from utils.utils import *
 from testing_file import * 
 
+# Declarando templates
+templates = Jinja2Templates(directory="templates")
+
+
 
 # Files and folders names
 config_file_name = "config.json" # Nombre del config file
 recordings_folder_name = "recordings" # Nombre del recordings folder
 states_file_name = "states.json" # ombre del archivo que guarda estados
+static_folder_name = "static"
 # Paths
 dir_path = os.path.dirname(__file__) # Directoro
-recordings_path = os.path.join(dir_path, recordings_folder_name)
+recordings_path = os.path.join(dir_path, recordings_folder_name) 
 config_path = os.path.join(dir_path, config_file_name)
 states_path = os.path.join(dir_path, states_file_name)
+static_folder_path = os.path.join(dir_path, static_folder_name)
 # Json
 json_config = get_json_file(config_path) 
 json_states = get_json_file(states_path) 
@@ -40,9 +50,84 @@ class scene(BaseModel):
     scene_number: int
     universes: int 
 
+
 # Creando app para conectarnos
 recorder_app = FastAPI()
+# Agregando directorio estatico donde guardamos los css y jquery
+recorder_app.mount(
+    "/static",
+    StaticFiles(directory=static_folder_path, html=True),
+    name="static",
+)
 status_list = []
+
+
+
+
+# Home
+@recorder_app.get(f'/')
+def home_page(request: Request):
+    """
+    Displays the main page of the webserver
+    """
+    
+    return templates.TemplateResponse("home.html", {
+        "request": request
+    })
+    
+# Broadcast scene page
+@recorder_app.get(f'/broadcast_page')
+def broadcast_page(request: Request):
+    """
+    Displays de broadcast section
+    """
+    
+    recordings_info = get_recordings_info(recordings_path)["content"]
+    print(recordings_info)
+    # Obteniendo las grabaciones que tienen mas de 0 universos
+    non_empty_recordings_list = []
+    for k in recordings_info.keys():
+        non_empty_recordings_list.append(f"Recording: { k }") if recordings_info[k] > 0 else None
+
+
+    return templates.TemplateResponse("broadcast.html", {
+        "request": request,
+        "recordings_info": recordings_info
+    })
+
+
+# Record page
+@recorder_app.get(f'/record_page')
+def record_page(request: Request):
+    """
+    Displays the recording new scenes page
+    Here you the user is able to record new scenes
+    """
+    scenes_to_display = 20
+    recordings_info = get_recordings_info(recordings_path)["content"]
+    # Creando diccionario con n cantidad de posibles escenas para grabar
+    scenes = {}
+    
+    for s in range(scenes_to_display):
+        # Revisando si la grabacion tiene contenido, si tiene contenido, almacenamos cuantos universos tiene
+        if str(s) in list(recordings_info.keys()):
+            scenes[s] = recordings_info[str(s)]
+        else:
+            scenes[s] = 0
+    
+    return templates.TemplateResponse("record_scene_page.html", {
+        "request": request,
+        "scenes_info": scenes
+    })
+    
+
+
+
+
+
+
+
+
 
 
 # Creando petición get para obtener numero de grabaciones y cuantos universos contiene cada una
@@ -56,9 +141,9 @@ def recordings_info(request: Request):
         print("This request is already running, please wait")
         return {"message": "This request is already running, please wait"}
     
-    change_json_file_value([function_name], states_path, True)
+    change_json_file_value([function_name], states_path, True) # Cambiamos estado de funcion
     recordings_info = get_recordings_info(recordings_path=recordings_path)
-    change_json_file_value([function_name], states_path, False)
+    change_json_file_value([function_name], states_path, False) # Cambiamos estado de función
     return recordings_info
 
 
@@ -79,11 +164,11 @@ def read_recording(recording_number: str, request: Request, brackground_tasks: B
         change_json_file_value([function_name], states_path, True) # Cambiando estado de los estados a true
         change_json_file_value(level = ["selected_scene"], config_path = config_path, value=recording_number) # Seleccionando escena a reproducir
         brackground_tasks.add_task(broadcast_recording, function_name, states_path) # Reproduciendo escena
-        return {"Playing recording:": recording_number}
+        return {"message":{"Playing recording:": recording_number}}
     
     # Cualquier otro caso es error
     else:
-        return {"Error:": "There was an error while trying to read and broadcast recording"}
+        return {"message": {"Error:": "There was an error while trying to read and broadcast recording"}}
 
 
 @recorder_app.post('/new_recording/')
@@ -93,7 +178,7 @@ async def new_recording(scene_to_record: scene, request: Request, brackground_ta
 
     # Revisa si el request ya esta corriendo
     if get_json_file(states_path)[function_name] == True : 
-        print("There is a scene being recorder, please wait!!!")
+        print("There is a scene being recorded, please wait!!!")
         return {"message": "There is a scene being recorder, please wait!!!"}
     
     # revisamos que no se este reproducioendo una grabacion
@@ -114,13 +199,6 @@ async def new_recording(scene_to_record: scene, request: Request, brackground_ta
 async def stop_recording():
     
     function_name = inspect.stack()[0][3]
-
-    # Begin: manejo de estados
-    if get_json_file(states_path)[function_name] == True:
-        print("This request is already running, please wait")
-        return {"message": "This request is already running, please wait"}
-    change_json_file_value([function_name], states_path, True)
-    # End: manejo de estados
     
     # Si keep_recording esta en True, cambiamos a False
     if get_json_file(states_path)["new_recording"] == True:
@@ -129,8 +207,8 @@ async def stop_recording():
     else:
         response = {"message": "There is nothing being recorded"}
     
-    change_json_file_value([function_name], states_path, False)
     return response
+
 
 # Para parar una reproducción de escenas
 @recorder_app.post('/stop_broadcasting/')
@@ -138,17 +216,12 @@ async def stop_broadcasting():
     
     function_name = inspect.stack()[0][3]
 
-    # Revisamos que no se este corriendo la funcion
-    if get_json_file(states_path)[function_name] == True:
-        print("This request is already running, please wait")
-        return {"message": "This request is already running, please wait"}
-    else: 
-        # Si se esta reproduciendo algo entonces lo paramos
-        if get_json_file(states_path)["read_recording"] == True:
-            change_json_file_value(["read_recording"], states_path, False)
-            response = {"message": "Stopped recording"}
-        else:
-            response = {"message": "There is nothing being recorded"}
+    # Si se esta reproduciendo algo entonces lo paramos
+    if get_json_file(states_path)["read_recording"] == True:
+        change_json_file_value(["read_recording"], states_path, False)
+        response = {"message": "Stopped broadcasting"}
+    else:
+        response = {"message": "There is nothing being broadcasted"}
 
     return response
 

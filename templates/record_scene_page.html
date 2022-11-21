@@ -1,0 +1,64 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h3 class="ui header">Record new scenes</h3>
+
+<div class="ui placeholder segment">
+    <div class="ui two column very relaxed stackable grid">
+        <div class="column">
+            <div class="ui form">
+                
+                <div class="ui fluid selection dropdown" id="select-scene-to-record">
+                    <input type="hidden" name="gender">
+                    <div class="default text">Select scene</div>
+                    <i class="dropdown icon"></i>
+                    <div class="menu">
+                        
+                        {% for key, value in scenes_info.items() %}
+                        {% if value > 0 %}
+                        <div class="item">
+                            <div class="ui red empty circular label"></div> {{ key }}
+                        </div>
+                        {% else %}
+                        <div class="item">
+                            <div class="ui green empty circular label"></div> {{ key }}
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            
+        </div>
+        <div class="middle aligned column">
+            
+            <div class="ui fluid selection dropdown" id="select-universe-number">
+                <input type="hidden" name="gender">
+                <div class="default text">Select univers</div>
+                <i class="dropdown icon"></i>
+                <div class="menu">
+                    {% for i in range(1, 17) %}
+                    <div class="item">
+                        <i class="space shuttle icon"></i> {{ i }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui vertical divider">
+        Record
+    </div>
+</div>    
+
+
+<button class="positive huge ui button" onclick="call_record_endpoint('/new_recording/')"><i class="circle icon"></i> 
+    Record
+</button>
+<button class="negative huge ui button" onclick="post_request('/stop_recording/')"><i class="stop icon"></i> 
+    Stop
+</button>
+
+{% endblock %}
