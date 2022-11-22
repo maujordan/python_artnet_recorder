@@ -24,7 +24,7 @@ def broadcast_recording(function_name, states_path):
         # Obteniendo la cantidad de universos que vamos a lanzar 
         config_universes = len(os.listdir(recordings_path)) # cantidad de archivos dentro del recording_path
         if config_universes == 0:
-            raise Exception("No recordings in this path")
+            print("No recordings in this path")
             return
 
         # Valores necesarios para mandar artner
@@ -107,6 +107,7 @@ def broadcast_recording(function_name, states_path):
         print(f"Done!!! Execution time: { round((end_time - start_time)/60, 1) } minutes")
     except Exception as e:
         print("There was an error when trying to play the recording:\n", e)
+        change_json_file_value([function_name], states_path, False) # Cambiando estado de reproducción
         exit()
     
     change_json_file_value([function_name], states_path, False) # Cambiando estado de reproducción

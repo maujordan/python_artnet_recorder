@@ -7,9 +7,10 @@ import asyncio
 # Funcion para cambiar algun valor del config.json
     # Recibe: elemento que vamos a cambiar en una lista, el config file path y el valor que vamos que insertaremos
 def change_json_file_value(level:list, config_path:str, value):
+    """
+    Changes value from a .json file
+    """
     try:
-        
-
         # Leyendo config file y guardandolo en una variable
         a_file = open(config_path, "r")
         json_cofig = json.load(a_file)
@@ -19,10 +20,11 @@ def change_json_file_value(level:list, config_path:str, value):
         for i in level:
             string_to_execute = string_to_execute + f'["{ i }"]'
 
-
         # Modificando el campo que queremos modificar
-        exec(f"{ string_to_execute } = { value }")
-
+        if isinstance(value, str): #Si value es string se ponen comillas, si no, solo se pone value
+            exec(f"{ string_to_execute } = '{ value }'")
+        else:
+            exec(f"{ string_to_execute } = { value }")
         # Guardando la variable en el file de config
         a_file = open(config_path, "w")
         json.dump(json_cofig, a_file, indent=3)
@@ -88,4 +90,11 @@ def keep_recording(config_path: str):
 def get_json_file(path):
     json_file = json.load(open(path)) # Config json
     return json_file
+
+def get_number_of_universes_in_recording(recordings_path):
+    """
+    Gets de umber of universes in the recording path
+    """
+    number_of_universes = len(os.listdir(recordings_path))
+    return number_of_universes
 

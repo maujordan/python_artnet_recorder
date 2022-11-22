@@ -2,28 +2,20 @@
 # uvicorn app:app --reload --> Cada vez que guarda el archivo refresca el servidor uvicorn 
 # 
 
-from fastapi import FastAPI, Request, BackgroundTasks, Depends
+from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from pathlib import Path
 from pydantic import BaseModel
-from typing import Text, Optional # Objetos de tipo texto
-from datetime import datetime
-from uuid import uuid4 as uuid
-from main_send_recording import broadcast_recording
-from inspect import signature
-from main_record_artnet import record_artnet
-import time
-import asyncio
 import uvicorn
 import inspect
 # User functions
+from main_send_recording import broadcast_recording
+from main_record_artnet import record_artnet
 from utils.utils import *
 from testing_file import * 
 
 # Declarando templates
 templates = Jinja2Templates(directory="templates")
-
 
 
 # Files and folders names
@@ -49,6 +41,10 @@ for key in list(json_states.keys()):
 class scene(BaseModel):
     scene_number: int
     universes: int 
+
+class config_change(BaseModel):
+    lista_campo: list
+    value: str
 
 
 # Creando app para conectarnos
@@ -83,7 +79,6 @@ def broadcast_page(request: Request):
     """
     
     recordings_info = get_recordings_info(recordings_path)["content"]
-    print(recordings_info)
     # Obteniendo las grabaciones que tienen mas de 0 universos
     non_empty_recordings_list = []
     for k in recordings_info.keys():
@@ -122,14 +117,6 @@ def record_page(request: Request):
     
 
 
-
-
-
-
-
-
-
-
 # Creando petición get para obtener numero de grabaciones y cuantos universos contiene cada una
 @recorder_app.get(f'/recordings_info')
 def recordings_info(request: Request):
@@ -163,11 +150,17 @@ def read_recording(recording_number: str, request: Request, brackground_tasks: B
     elif get_json_file(states_path)["new_recording"] == False: 
         change_json_file_value([function_name], states_path, True) # Cambiando estado de los estados a true
         change_json_file_value(level = ["selected_scene"], config_path = config_path, value=recording_number) # Seleccionando escena a reproducir
+        # Si hay 0 universos en el folder, no corremos funcion
+        if get_number_of_universes_in_recording(recordings_path + f'/scene_{ recording_number }') == 0:
+            change_json_file_value([function_name], states_path, False) # Cambiando estado de los estados a true
+            return {"message":{"There´s nothing in:": f"scene_{ recording_number }"}}
+
         brackground_tasks.add_task(broadcast_recording, function_name, states_path) # Reproduciendo escena
         return {"message":{"Playing recording:": recording_number}}
     
     # Cualquier otro caso es error
     else:
+        change_json_file_value([function_name], states_path, False) # Cambiando estado de reproducción
         return {"message": {"Error:": "There was an error while trying to read and broadcast recording"}}
 
 
@@ -226,7 +219,25 @@ async def stop_broadcasting():
     return response
 
 
+# Cambia un valor del config.json
+@recorder_app.post('/change_config_value/')
+async def endpoint_change_config_value(field_to_change: config_change):
+    """
+    Cambia algun valor del config file
+    """
+    function_name = inspect.stack()[0][3]
+    # Manejo de estados
+    # Si ya esta corriendo no ejecutamos
+    if get_json_file(states_path)[function_name] == True: 
+        return {"message": "This request is already running, please wait"}
+    # si no esta corriendo ejecutamos
+    else:
+        change_json_file_value([function_name], states_path, True) # estado running
+        change_json_file_value(field_to_change.lista_campo, config_path, field_to_change.value) # Cambiando la ip
+        change_json_file_value([function_name], states_path, False) # estado not running
 
+    return {"message": f"Succesfully changed '{ field_to_change.lista_campo[-1] }' field to '{ field_to_change.value }'"}
 
 if __name__ == '__main__':
-    uvicorn.run("app:recorder_app", host="0.0.0.0", port=8000, reload=True)
+    #uvicorn.run("app:recorder_app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("app:recorder_app", host="0.0.0.0", port=8000)

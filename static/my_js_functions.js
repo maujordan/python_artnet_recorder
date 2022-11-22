@@ -27,8 +27,8 @@ $(document).ready(function () {
     //Dropdown
     $('#select-scene-to-record').dropdown({allowAdditions: true});
     $('#select-universe-number').dropdown({allowAdditions: true});
-
-
+    
+    
     
 });
 
@@ -157,5 +157,4 @@ function post_request(url, request_body=''){
         }
     });
 }
-
 
