@@ -82,20 +82,24 @@ def broadcast_recording(function_name, states_path):
         print("Broadcastings...")
         # Cargamos cada frame en cada uno de los universos
         read_recording_state = True
-        for i in range(min_packets):
-            # Leemos el estado de la grabacion antes de entrar en el loop
-            try:
-                read_recording_state = get_json_file(states_path)["read_recording"]
-                pass
-            except:
-                pass
-            for j in range(config_universes):
-                exec(f"artnet_object{ j }.set(list(map(int, recording{ j }[{ i }])))")  
-            # Si el estado de la grabación esta en false, paramos la grabacion
+        while True:
             if read_recording_state  == False:
-                print("Stopping broadcast...")
-                break
-            time.sleep(1/framerate) # 30 HZ
+                    break
+            for i in range(min_packets):
+                # Leemos el estado de la grabacion antes de entrar en el loop
+                try:
+                    read_recording_state = get_json_file(states_path)["read_recording"]
+                    pass
+                except:
+                    pass
+                for j in range(config_universes):
+                    exec(f"artnet_object{ j }.set(list(map(int, recording{ j }[{ i }])))")  
+                # Si el estado de la grabación esta en false, paramos la grabacion
+                if read_recording_state  == False:
+                    print("Stopping broadcast...")
+                    break
+                print(f"Frame: { i }/{ min_packets }", end='\r')
+                time.sleep(1/framerate) # 30 HZ
 
         # Mandando a 0 todos los canales
         # Cargamos cada frame en cada uno de los universos

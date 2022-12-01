@@ -239,5 +239,5 @@ async def endpoint_change_config_value(field_to_change: config_change):
     return {"message": f"Succesfully changed '{ field_to_change.lista_campo[-1] }' field to '{ field_to_change.value }'"}
 
 if __name__ == '__main__':
-    #uvicorn.run("app:recorder_app", host="0.0.0.0", port=8000, reload=True)
-    uvicorn.run("app:recorder_app", host="0.0.0.0", port=8000)
+    uvicorn.run("app:recorder_app", host="0.0.0.0", port=8000, reload=True)
+    #uvicorn.run("app:recorder_app", host="0.0.0.0", port=8000)
