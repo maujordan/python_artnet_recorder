@@ -10,3 +10,8 @@
 
 ------------------------ Crear nuevos endpoints ------------------------
 - Si es endpoint de back end se debe agregar el nombre de la funcion en states.json
+
+
+------------------------ Cronear on reboot ------------------------
+HOME=/home/maujordan
+@reboot cd /home/maujordan/Documents/python_artnet_recorder/ && python /home/maujordan/Documents/python_artnet_recorder/app.py
