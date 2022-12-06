@@ -5,6 +5,9 @@
 <button class="ui orange button" onclick="open_ip_modal()">
     <i class="magic icon"></i> Change IP Adress
 </button>
+<button class="ui red button" onclick="stop_broadcast()">
+    <i class="stop icon"></i> Stop
+</button>
 <table class="ui celled padded table">
     <thead>
         <tr>
@@ -25,7 +28,7 @@
             <td class="center aligned"> 
                 {{ value }} universes
             </td>
-            <td class="left aligned"> 
+            <td class="center aligned"> 
                 <button class="ui compact icon button" value="{{ key }}"  onclick="open_description_modal(value)"><i class="pencil icon"></i></button> 
                 Here goes some description
             </td>
@@ -37,9 +40,7 @@
     </tbody>
     <tfoot>
         <tr><th colspan="5">
-            <button class="ui red button" onclick="stop_broadcast()">
-                <i class="stop icon"></i> Stop
-            </button>
+
         </th>
         
     </tr></tfoot>

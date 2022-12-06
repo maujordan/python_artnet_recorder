@@ -1,10 +1,10 @@
 {
-   "selected_scene": "4",
+   "selected_scene": "3",
    "record": false,
    "currently_recording": false,
    "settings": {
-      "ip_address": "192.168.100.228",
-      "universes": 1,
+      "ip_address": "192.168.42.125",
+      "universes": 10,
       "pixels": 170,
       "subnet": 0
    },
