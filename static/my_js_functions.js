@@ -122,6 +122,21 @@ function call_record_endpoint(url){
     }
 }
 
+//Llama endpoint de delete
+function call_delete_scene_endpoint(scene_to_delete){
+    var url = '/delete_scene/';
+    url = url.concat(scene_to_delete);
+    // Reconfirmamos que se quiere borrar
+    x = window.confirm("Estas seguro de que quieres borrar la scene_".concat(scene_to_delete));
+    if (x == true){
+        delete_request(url)
+        location.reload()
+    }
+    else{
+        return
+    }
+}
+
 // Makes a post request
 function post_request(url, request_body){
     $.ajax({
@@ -140,13 +155,12 @@ function post_request(url, request_body){
     });
 }
 
-// Makes a post request
-function post_request(url, request_body=''){
+// Makes a delete request
+function delete_request(url){
     $.ajax({
         url: url,
-        type: 'POST',
+        type: 'DELETE',
         contentType: 'application/json',
-        data: JSON.stringify(request_body), 
         success: function (data, status, jqXHR) {
             alert(JSON.stringify(data));// write success in " "
         },
@@ -157,4 +171,6 @@ function post_request(url, request_body=''){
         }
     });
 }
+
+
 

@@ -12,7 +12,7 @@ import inspect
 from main_send_recording import broadcast_recording
 from main_record_artnet import record_artnet
 from utils.utils import *
-from testing_file import * 
+
 
 # Declarando templates
 templates = Jinja2Templates(directory="templates")
@@ -238,6 +238,57 @@ async def endpoint_change_config_value(field_to_change: config_change):
 
     return {"message": f"Succesfully changed '{ field_to_change.lista_campo[-1] }' field to '{ field_to_change.value }'"}
 
+
+# Busca los dispositivos conectados  la red
+class NetworkDevice(BaseModel):
+    ip_address: str
+    ac_address: str
+
+@recorder_app.get('/find_devices_on_network/')
+async def find_devices_on_network():
+    """
+    ARREGLAR
+    Corre un "arp -a" para buscar los dispositivos conectados a la red.
+    Returns: lista con listas [[ip1, mac1], [ip2, mac2]]
+    """
+    
+    """
+    # Manejo de estados
+    # Si ya esta corriendo no ejecutamos
+    function_name = inspect.stack()[0][3]
+    if get_json_file(states_path)[function_name] == True: 
+        return {"message": "This request is already running, please wait"}
+    # si no esta corriendo ejecutamos
+    else:
+        change_json_file_value([function_name], states_path, True) # estado running
+        # Aqui ejecutamos las acciones
+        devices_on_network = find_devices_on_network()
+        change_json_file_value([function_name], states_path, False) # estado not running
+
+    return {"message": devices_on_network}
+    """
+
+# Cambia un valor del config.json
+@recorder_app.delete('/delete_scene/{scene_to_delete}')
+def delete_scene_endpoint(scene_to_delete: int):
+    """
+    Elimina alguna escena que este grabada
+    Recibe la escena a eliminar a manera de int.
+    """
+    result = delete_scene(recordings_path, f"scene_{ scene_to_delete }")
+    result = 1
+    if result == 1:
+        return {"message": f"scene_{ scene_to_delete } deleted!"}
+    elif result == 0:
+        return {"message": f"Couldn´t delete. scene_{ scene_to_delete } doesn´t exist yet!"}
+    else:
+        return {"ERROR"}
+        
+    
+    
+
+
+# Corriendo app
 if __name__ == '__main__':
     uvicorn.run("app:recorder_app", host="0.0.0.0", port=8000, reload=True)
     #uvicorn.run("app:recorder_app", host="0.0.0.0", port=8000)

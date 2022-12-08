@@ -4,5 +4,6 @@
    "new_recording": false,
    "stop_recording": false,
    "stop_broadcasting": false,
-   "endpoint_change_config_value": false
+   "endpoint_change_config_value": false,
+   "find_devices_on_network": false
 }

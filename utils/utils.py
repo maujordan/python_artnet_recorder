@@ -1,7 +1,8 @@
 import os
 import json
 import time
-import asyncio
+import shutil
+import os
 
 
 # Funcion para cambiar algun valor del config.json
@@ -98,3 +99,67 @@ def get_number_of_universes_in_recording(recordings_path):
     number_of_universes = len(os.listdir(recordings_path))
     return number_of_universes
 
+
+def find_devices_on_network():
+    """
+    Looks for devices in network running an "arp -a" command
+    Returns: dict with {ip: mac}
+    """
+
+    import os
+    import re
+
+    # Corriendo arp -a desde python para encontrar dispositivos en la red
+    devices = []
+    for device in os.popen('arp -a'):
+        devices.append(device)
+
+    ips = []
+    macs = []
+    for device in devices:
+        # Finding ip address in string
+        ip_address = re.findall( r'[0-9]+(?:\.[0-9]+){3}', device )
+        # Finding mac address in string
+        p = re.compile(r'(?:[0-9a-fA-F]:?){12}')
+        mac_address = re.findall(p, device)
+        
+        current_ip = ''
+        if len(ip_address) > 0:
+            current_ip = ip_address[0]
+        else:
+            current_ip = "No ip address for device"
+
+        current_mac = ''
+        if len(mac_address) > 0:
+            current_mac = mac_address[0]
+        else:
+            current_mac = "No mac address for device"
+        
+        ips.append(current_ip)
+        macs.append(current_mac)
+
+    # Poniendo las ips y mac en un diccionario
+    devices_dict = {}
+    for i in range(len(ips)):
+        devices_dict[ips[i]] = macs[i]
+
+
+    return devices_dict
+
+def delete_scene(recordings_path, scene_to_delete_string):
+    """
+    Deletes scene. It deletes the folder of the scene with all it´s contente
+    Receives:
+    - recordings_path: path to the recording folder
+    - scene_to_delete_string: the scene that we are deleting. Example: "scene_2"
+    """
+
+    scene_to_delete_path = os.path.join(recordings_path, scene_to_delete_string)
+    if os.path.exists(scene_to_delete_path) and os.path.isdir(scene_to_delete_path):
+        shutil.rmtree(scene_to_delete_path)
+        return 1
+    else:
+        print(f"Couldn´t delete { scene_to_delete_path } because it doesn´t exist.")
+        return 0
+
+    return 0

@@ -28,8 +28,8 @@ def record_artnet():
         file_name = '{0:03}.csv'.format(i)
         exec(f"""
 def callback_u{ i }(data):
-    print('universo { i }:')
-    print(data)
+    print('Recording universe { i }:')
+    #print(data)
     save_in_csv(output_name= scene_path + '/' + '{ file_name }', list_to_append=data) # Guardamos en un csv
     return
         """)

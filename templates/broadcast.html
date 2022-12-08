@@ -14,6 +14,7 @@
             <th class="center aligned", >Scene</th>
             <th class="center aligned", >Universes</th>
             <th class="center aligned", >Description</th>
+            <th class="center aligned", >Delete</th>
         </tr>
     </thead>
     <tbody>
@@ -31,6 +32,9 @@
             <td class="center aligned"> 
                 <button class="ui compact icon button" value="{{ key }}"  onclick="open_description_modal(value)"><i class="pencil icon"></i></button> 
                 Here goes some description
+            </td>
+            <td class="center aligned"> 
+                <button class="ui compact red icon button" value="{{ key }}" onclick="call_delete_scene_endpoint(value)"><i class="trash alternate icon"></i></button> 
             </td>
             
         </tr>
