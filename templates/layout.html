@@ -17,6 +17,17 @@
                 Artnet Recorder
             </div>
         </h1>
+        {% if  ip_address != null %}
+        <div class="ui mini icon message">
+            <i class="microchip icon"></i>
+            <div class="content">
+              <div class="mini header">
+                Device running at: {{ ip_address }}
+              </div>
+            </div>
+          </div>
+        {% endif %}
+
         
         {% block content %}
         {% endblock %}

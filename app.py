@@ -66,9 +66,12 @@ def home_page(request: Request):
     """
     Displays the main page of the webserver
     """
-    
+
+    direccion_ip = get_ip_address()
+
     return templates.TemplateResponse("home.html", {
-        "request": request
+        "request": request,
+        "ip_address": direccion_ip
     })
     
 # Broadcast scene page
@@ -283,8 +286,17 @@ def delete_scene_endpoint(scene_to_delete: int):
         return {"message": f"Couldn´t delete. scene_{ scene_to_delete } doesn´t exist yet!"}
     else:
         return {"ERROR"}
-        
-    
+
+
+class update_body(BaseModel):
+    scene_to_update: str
+    description_message: str
+@recorder_app.post('/update_recording_description/')
+def update_recording_description(update_info: update_body):
+
+    update_description_file(update_info.scene_to_update, text_to_place=update_info.description_message)    
+
+    return {"message": f"Updated description to: { update_info.description_message }"}
     
 
 

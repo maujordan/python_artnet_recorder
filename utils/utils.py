@@ -163,3 +163,31 @@ def delete_scene(recordings_path, scene_to_delete_string):
         return 0
 
     return 0
+
+def get_ip_address():
+    """
+    Gets the device ip address
+    """
+    import socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    direccion_ip = s.getsockname()[0]
+    s.close()
+
+    return direccion_ip
+
+
+def update_description_file(scene_to_update, text_to_place="Here goes some description"):
+    """
+    Updatea el file de descripciones de escenas
+    """
+    # Check if scene exists
+    with open("descriptions.json", "r") as jsonFile:
+        descriptions_json = json.load(jsonFile)
+
+    descriptions_json["descriptions"][scene_to_update] = text_to_place
+
+    with open("descriptions.json", "w") as jsonFile:
+        json.dump(descriptions_json, jsonFile)
+    
+    return
