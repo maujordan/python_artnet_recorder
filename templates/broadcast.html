@@ -19,26 +19,30 @@
     </thead>
     <tbody>
         {% for key, value in recordings_info.items() %}
+
+        
+        
         {% if value > 0 %}
-        <tr>
-            <td class="center aligned">
-                <button class="ui primary button" value="{{ key }}" onclick="play_scene(value)">
-                    <i class="play icon"></i> Scene no. {{ key }}
-                </button>
-            </td>
-            <td class="center aligned"> 
-                {{ value }} universes
-            </td>
-            <td class="center aligned"> 
-                <button class="ui compact icon button" value="{{ key }}"  onclick="open_description_modal(value)"><i class="pencil icon"></i></button> 
-                Here goes some description
-            </td>
-            <td class="center aligned"> 
-                <button class="ui compact red icon button" value="{{ key }}" onclick="call_delete_scene_endpoint(value)"><i class="trash alternate icon"></i></button> 
-            </td>
-            
-        </tr>
-        {% endif %}
+            <tr>
+                <td class="center aligned">
+                    <button class="ui primary button" value="{{ key }}" onclick="play_scene(value)">
+                        <i class="play icon"></i> Scene no. {{ key }}
+                    </button>
+                </td>
+                <td class="center aligned"> 
+                    {{ value }} universes
+                </td>
+                <td class="center aligned"> 
+                    <button class="ui compact icon button" value="{{ key }}"  onclick="open_description_modal(value)"><i class="pencil icon"></i></button> 
+                    Here goes some description
+                </td>
+                <td class="center aligned"> 
+                    <button class="ui compact red icon button" value="{{ key }}" onclick="call_delete_scene_endpoint(value)"><i class="trash alternate icon"></i></button> 
+                </td>
+                
+            </tr>
+            {% endif %}
+        
         {% endfor %}
         
     </tbody>

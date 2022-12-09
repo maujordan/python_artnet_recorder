@@ -3,6 +3,7 @@ import json
 import time
 import shutil
 import os
+import re
 
 
 # Funcion para cambiar algun valor del config.json
@@ -38,6 +39,7 @@ def change_json_file_value(level:list, config_path:str, value):
         return str(e)
 
 # Recibe el directorio de recordings y devuelve un json con la cantidad de recordings y cuantos universos tiene cada uno
+
 def get_recordings_info(recordings_path: str):
     try:
         recordings_list = os.listdir(recordings_path)
@@ -47,11 +49,43 @@ def get_recordings_info(recordings_path: str):
         recordings_dir["info"] = "recording index: amount of universes"
         recordings_dir["content"] = {}
         for i, scene in enumerate(recordings_list):
-            recordings_dir["content"][scene[len(scene)-1]] = len(os.listdir(recordings_path + '/' + scene))
+            scene_number = re.findall(r'\d+', scene)[0]
+            recordings_dir["content"][scene_number] = len(os.listdir(recordings_path + '/' + scene))
         return recordings_dir
     
     except Exception as e:
         print(f"There was an error in get_recordings_info() \n{ e }")
+
+
+"""
+def get_recordings_info(recordings_path: str):
+    
+    Returns the following info about recordings:
+    #- scene number
+    #- ammount of universes
+    #- description stored in "descriptions.json"
+    
+    try:
+        recordings_list = os.listdir(recordings_path)
+        recordings_list.sort()
+
+        recordings_dir = {}
+        recordings_dir["content"] = {}
+        for i, scene in enumerate(recordings_list):
+            scene_number = re.findall(r'\d+', scene)[0]
+            recordings_dir["content"][scene_number] = {
+                "universes": len(os.listdir(recordings_path + '/' + scene)),
+                "description": get_recording_description(scene)
+            }
+        return recordings_dir
+    
+    except Exception as e:
+        print(f"There was an error in get_recordings_info() \n{ e }")
+"""
+
+
+
+
 
 # Obtener numero de argumentos de una funcion
 def get_function_number_of_arguments(function):
@@ -191,3 +225,15 @@ def update_description_file(scene_to_update, text_to_place="Here goes some descr
         json.dump(descriptions_json, jsonFile)
     
     return
+
+def get_recording_description(scene_to_get):
+    """
+    Returns description of scene stored in "descriptions.json"
+    """
+    # Check if scene exists
+    with open("descriptions.json", "r") as jsonFile:
+        descriptions_json = json.load(jsonFile)
+
+    description = "No description yet." if scene_to_get not in descriptions_json["descriptions"] else descriptions_json["descriptions"][scene_to_get]
+    
+    return description
