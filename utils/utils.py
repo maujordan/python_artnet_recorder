@@ -40,7 +40,11 @@ def change_json_file_value(level:list, config_path:str, value):
 
 # Recibe el directorio de recordings y devuelve un json con la cantidad de recordings y cuantos universos tiene cada uno
 
-def get_recordings_info(recordings_path: str):
+def get_recordings_info(recordings_path: str, descriptions_path=None):
+    """
+    Gets information about the scenes recorded.
+    If the descriptions path is given will return a dictonary with the descriptions if they exist
+    """
     try:
         recordings_list = os.listdir(recordings_path)
         recordings_list.sort()
@@ -48,9 +52,18 @@ def get_recordings_info(recordings_path: str):
         recordings_dir = {}
         recordings_dir["info"] = "recording index: amount of universes"
         recordings_dir["content"] = {}
-        for i, scene in enumerate(recordings_list):
-            scene_number = re.findall(r'\d+', scene)[0]
-            recordings_dir["content"][scene_number] = len(os.listdir(recordings_path + '/' + scene))
+        for scene in recordings_list:
+            scene_number = re.findall(r'\d+', scene)[0] # Obteniendo numero de escena
+            recordings_dir["content"][scene_number] = len(os.listdir(recordings_path + '/' + scene)) # Obteniendo cantidad de universos
+
+        # Obteniendo descripciones
+        recordings_dir["descriptions"] = {}
+        if descriptions_path != None:
+            for scene in recordings_list:
+                scene_number = re.findall(r'\d+', scene)[0] # Obteniendo numero de escena
+                recordings_dir["descriptions"][scene_number] = get_recording_description(scene)
+        else:
+            recordings_dir["descriptions"] = None
         return recordings_dir
     
     except Exception as e:
@@ -229,6 +242,7 @@ def update_description_file(scene_to_update, text_to_place="Here goes some descr
 def get_recording_description(scene_to_get):
     """
     Returns description of scene stored in "descriptions.json"
+    If the description doesnt exist yet then it will return "No description yet."
     """
     # Check if scene exists
     with open("descriptions.json", "r") as jsonFile:

@@ -20,15 +20,18 @@ templates = Jinja2Templates(directory="templates")
 
 # Files and folders names
 config_file_name = "config.json" # Nombre del config file
+descriptions_file_name = "descriptions.json" # Nombre del file que contiene descrpciones de las grabaciones
 recordings_folder_name = "recordings" # Nombre del recordings folder
 states_file_name = "states.json" # ombre del archivo que guarda estados
 static_folder_name = "static"
+
 # Paths
-dir_path = os.path.dirname(__file__) # Directoro
+dir_path = os.path.abspath('')
 recordings_path = os.path.join(dir_path, recordings_folder_name) 
 config_path = os.path.join(dir_path, config_file_name)
 states_path = os.path.join(dir_path, states_file_name)
 static_folder_path = os.path.join(dir_path, static_folder_name)
+descriptions_path = os.path.join(dir_path, descriptions_file_name)
 # Json
 json_config = get_json_file(config_path) 
 json_states = get_json_file(states_path) 
@@ -81,7 +84,10 @@ def broadcast_page(request: Request):
     Displays de broadcast section
     """
     
-    recordings_info = get_recordings_info(recordings_path)["content"]
+    recordings_details = get_recordings_info(recordings_path, descriptions_path)
+    recordings_info = recordings_details["content"] # Obteniendo informacion de cuantos universos hay por escena
+    recordings_descriptions = recordings_details["descriptions"] # Obteniendo descripciones de escenas
+    
     # Obteniendo las grabaciones que tienen mas de 0 universos
     non_empty_recordings_list = []
     for k in recordings_info.keys():
@@ -90,7 +96,8 @@ def broadcast_page(request: Request):
 
     return templates.TemplateResponse("broadcast.html", {
         "request": request,
-        "recordings_info": recordings_info
+        "recordings_info": recordings_info,
+        "recordings_descriptions": recordings_descriptions
     })
 
 
@@ -271,7 +278,7 @@ async def find_devices_on_network():
     return {"message": devices_on_network}
     """
 
-# Cambia un valor del config.json
+
 @recorder_app.delete('/delete_scene/{scene_to_delete}')
 def delete_scene_endpoint(scene_to_delete: int):
     """
@@ -296,7 +303,7 @@ def update_recording_description(update_info: update_body):
 
     update_description_file(update_info.scene_to_update, text_to_place=update_info.description_message)    
 
-    return {"message": f"Updated description to: { update_info.description_message }"}
+    return {"message": f"Updated description for scene '{ update_info.scene_to_update }' to: { update_info.description_message }"}
     
 
 

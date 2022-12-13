@@ -34,7 +34,7 @@
                 </td>
                 <td class="center aligned"> 
                     <button class="ui compact icon button" value="{{ key }}"  onclick="open_description_modal(value)"><i class="pencil icon"></i></button> 
-                    Here goes some description
+                    {{ recordings_descriptions[key] }}
                 </td>
                 <td class="center aligned"> 
                     <button class="ui compact red icon button" value="{{ key }}" onclick="call_delete_scene_endpoint(value)"><i class="trash alternate icon"></i></button> 
@@ -94,12 +94,13 @@
     </div>
 
     <div class="ui button" id="cancel_modal_description">Cancel</div>
-    <div class="ui button" id="save_description" onclick="save_scene_description()">Save</div>
+    <div class="ui button" id="save_description" data-value="box1" onclick="save_scene_description()">Save</div>
 </div>
 </div>
 
 
 
 <script src="../static/functions_ip.js"></script>
+<script src="../static/my_js_functions.js"></script>
 
 {% endblock %}

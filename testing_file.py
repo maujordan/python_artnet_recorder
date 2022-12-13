@@ -9,25 +9,20 @@ from main_send_recording import broadcast_recording
 from main_record_artnet import record_artnet
 from utils.utils import *
 
-# Parameters
-scene_to_update = "scene_0"
-text_to_place= "here goes some text"
-# END  Parameters
 
+# Files and folders names
+config_file_name = "config.json" # Nombre del config file
+recordings_folder_name = "recordings" # Nombre del recordings folder
+states_file_name = "states.json" # ombre del archivo que guarda estados
+static_folder_name = "static"
+# Paths
+dir_path = os.path.dirname(__file__) # Directoro
+recordings_path = os.path.join(dir_path, recordings_folder_name) 
+config_path = os.path.join(dir_path, config_file_name)
+states_path = os.path.join(dir_path, states_file_name)
+static_folder_path = os.path.join(dir_path, static_folder_name)
+# Json
+json_config = get_json_file(config_path) 
+json_states = get_json_file(states_path) 
 
-def update_description_file(scene_to_update, text_to_place="Here goes some description"):
-    """
-    Updatea el file de descripciones de escenas
-    """
-    # Check if scene exists
-    with open("descriptions.json", "r") as jsonFile:
-        descriptions_json = json.load(jsonFile)
-
-    descriptions_json["descriptions"][scene_to_update] = text_to_place
-
-    with open("descriptions.json", "w") as jsonFile:
-        json.dump(descriptions_json, jsonFile)
-    
-    return
-
-update_description_file("scene_1")
+json_config

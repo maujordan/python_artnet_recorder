@@ -51,7 +51,11 @@ var scene = '';
 function open_description_modal(value){
     // Mostrar modal
     $('#edit_description_modal').modal('show');
+    //Changes content of the element by id
     document.getElementById("change_description_header").innerHTML = "Change description ".concat(value);
+    // Changes de value of the button with id "save_description", it sets it to the scene that we need
+    $('#save_description').attr('data-value', value);
+
     scene = value;
     
 }
@@ -63,11 +67,24 @@ function clear_description_var(){
 var new_description = '';
 function save_scene_description(){
     var valor = document.getElementById("description_text").value;
+    
+    
+    
     if (valor == ''){
         alert("Nothing to save");
     }else{
-        alert("Funcion aun no implementada.\nAqui guardamos el valor: \n".concat(valor))
+        // Gets "data-value" attribute of div button by its id
+        var escena_a_cambiar = document.querySelector('#save_description').getAttribute("data-value");
+        var request_body = {
+            "scene_to_update": "scene_".concat(escena_a_cambiar),
+            "description_message": valor
+        }
+        // lamando endpoint para cmabiar la descripcion
+        post_request("/update_recording_description/", request_body);
+        location.reload();
+
     }
+    
 }
 
 function open_ip_modal(){
@@ -85,7 +102,10 @@ function save_new_ip(){
     }
     // Revisamos que el formato de la ip sea correcto
     if (ValidateIPaddress(valor)){
+        console.log(url);
+        console.log(request_body);
         post_request(url, request_body);
+
     }
 }
 
