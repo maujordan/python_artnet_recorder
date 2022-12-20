@@ -97,7 +97,9 @@ def broadcast_recording(function_name, states_path):
                 # Si el estado de la grabación esta en false, paramos la grabacion
                 if read_recording_state  == False:
                     print("Stopping broadcast...")
+                    # Cerrando los threads
                     break
+
                 print(f"Frame: { i }/{ min_packets }", end='\r')
                 time.sleep(1/framerate) # 30 HZ
 
@@ -106,7 +108,9 @@ def broadcast_recording(function_name, states_path):
         print("Sending 0 to all channels")
         for i in range(config_universes):
             exec(f"artnet_object{ i }.blackout()")    
-
+            exec(f"artnet_object{ i }.stop()")
+            exec(f"del artnet_object{ i }")        
+            
         end_time = time.time()
         print(f"Done!!! Execution time: { round((end_time - start_time)/60, 1) } minutes")
     except Exception as e:
@@ -115,4 +119,5 @@ def broadcast_recording(function_name, states_path):
         exit()
     
     change_json_file_value([function_name], states_path, False) # Cambiando estado de reproducción
+    
     return

@@ -61,6 +61,10 @@ u{ i }_listener = server.register_listener(universe={ i }, callback_function=cal
             print("\nParamos grabacion")
             server.delete_all_listener()
             change_json_file_value(level=["new_recording"], config_path=states_path, value=False) # Cambiando el estado de la grabacion a false
+    # Limpiando el servidor cuando teminamos
+    # Creando listeners para la cantidad de universos que hay en el config.json, por ahora maximo 16
+    for i in range(config_universes):
+        exec(f"""del u{ i }_listener""")
     del server
     
     
