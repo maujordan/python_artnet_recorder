@@ -4,6 +4,7 @@ import time
 import shutil
 import os
 import re
+import shutil
 
 
 # Funcion para cambiar algun valor del config.json
@@ -251,3 +252,51 @@ def get_recording_description(scene_to_get):
     description = "No description yet." if scene_to_get not in descriptions_json["descriptions"] else descriptions_json["descriptions"][scene_to_get]
     
     return description
+
+def delete_directory(dirpath):
+    """
+    Elimina un directorio recibiendo el path, solo si existe 
+    """
+    if os.path.exists(dirpath) and os.path.isdir(dirpath):
+        print(f"{ dirpath } eliminado")
+        shutil.rmtree(dirpath)
+    return
+
+def CreateWifiConfig(SSID, password):
+    """
+    Changes the wifi SSID and password. Before running the permissions of the file have to be changed have to be changed running: sudo chmod 777 /etc/wpa_supplicant/wpa_supplicant.conf.
+    Parameters:
+        - SSID
+        - password
+    Returns: null
+    """
+    #setting up file contents
+    config_lines = [
+        'ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev',
+        'update_config=1',
+        'country=MX',
+        '\n',
+        'network={',
+        '\tssid="{}"'.format(SSID),
+        '\tpsk="{}"'.format(password),
+        '}'
+        ]
+    config = '\n'.join(config_lines)
+    
+    #display additions
+    print(config)
+    
+    #give access and writing. may have to do this manually beforehand
+    os.popen("sudo chmod a+w /etc/wpa_supplicant/wpa_supplicant.conf")
+    
+    #writing to file
+    with open("/etc/wpa_supplicant/wpa_supplicant.conf", "w") as wifi:
+        wifi.write(config)
+    
+    #displaying success
+    print("wifi config added")
+
+    #reboot, which impliments changes
+    os.popen("sudo reboot")
+
+    return

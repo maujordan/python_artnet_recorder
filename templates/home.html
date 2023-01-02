@@ -16,11 +16,46 @@
                     Record new scene
                 </button>
             </a>
+            <a class="item">
+                <button class="massive ui gray button" onclick="open_change_wifi_password_modal()">
+                    <i class="wifi icon"></i>
+                    Change wifi
+                </button>
+            </a>
             
             
         </div>
     </div>
 </body>
 
+
+<div class="ui basic modal" id="modal_cambiar_wifi_password">
+    <div class="ui header">
+        <i class="rss icon"></i>
+        Change Wifi
+    </div>
+    <div class="content">
+        <p>Type the IP adress that will receive the artnet signal</p>
+        <div class="ui huge icon input">
+            <input type="text" placeholder="SSID..." id="ssid_input">
+            <i class="rss icon"></i>
+        </div>
+        <p></p>
+        <div class="ui huge icon input">
+            <input type="text" placeholder="Password..." id="wifi_password_input">
+            <i class="keyboard icon"></i>
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui massive red basic cancel inverted button">
+            <i class="remove icon"></i>
+            Cancel
+        </div>
+        <div class="ui massive green ok inverted button" id="done_button_wifi" onclick="save_new_wifi_configuration()">
+            <i class="checkmark icon"></i>
+            Done
+        </div>
+    </div>
+</div>
 
 {% endblock %}

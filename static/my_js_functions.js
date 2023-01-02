@@ -129,12 +129,31 @@ function call_delete_scene_endpoint(scene_to_delete){
     // Reconfirmamos que se quiere borrar
     x = window.confirm("Estas seguro de que quieres borrar la scene_".concat(scene_to_delete));
     if (x == true){
-        delete_request(url)
-        location.reload()
+        delete_request(url);
+        location.reload();
     }
     else{
         return
     }
+}
+
+// Makes a post request
+function stop_recording_post_request(url, request_body){
+    $.ajax({
+        url: url,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(request_body), 
+        success: function (data, status, jqXHR) {
+            alert(JSON.stringify(data));// write success in " "
+            location.reload();
+        },
+        error: function (jqXHR, status) {
+            // error handler
+            console.log(jqXHR);
+            alert('fail' + status.code);
+        }
+    });
 }
 
 // Makes a post request
@@ -172,5 +191,36 @@ function delete_request(url){
     });
 }
 
+//Abre el modal de cambiar contraseña de wifi
+function open_change_wifi_password_modal(){
+    $('#modal_cambiar_wifi_password').modal('show');  // Cambiar ip
+}
 
-
+//Manda a llamar endpoint de guardar nueva contraseña de wifi
+function save_new_wifi_configuration(){
+    var url = "/change_wifi_settings/";
+    var valor_ssid = document.getElementById("ssid_input").value;
+    var valor_password = document.getElementById("wifi_password_input").value;
+    
+    request_body = {
+        "SSID": valor_ssid,
+        "wifi_password": valor_password
+    };
+    
+    if(valor_ssid != '' && valor_password != ''){
+        x = window.confirm("Are you sure you want to change the wifi settings to: \n-SSID: ".concat(valor_ssid).concat("\n-Password: ").concat(valor_password));
+        if (x == true){
+            alert("Rebooting system...")
+            post_request(url, request_body);
+            
+        }
+        else{
+            alert("No changes applied")
+            return
+        }
+        
+    }
+    else{
+        alert("Please select scene and universe");
+    }
+}

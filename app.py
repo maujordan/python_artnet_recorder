@@ -108,7 +108,7 @@ def record_page(request: Request):
     Displays the recording new scenes page
     Here you the user is able to record new scenes
     """
-    scenes_to_display = 20
+    scenes_to_display = 40
     recordings_info = get_recordings_info(recordings_path)["content"]
     # Creando diccionario con n cantidad de posibles escenas para grabar
     scenes = {}
@@ -306,6 +306,24 @@ def update_recording_description(update_info: update_body):
     return {"message": f"Updated description for scene '{ update_info.scene_to_update }' to: { update_info.description_message }"}
     
 
+class update_wifi_body(BaseModel):
+    SSID: str
+    wifi_password: str
+@recorder_app.post('/change_wifi_settings/')
+def change_wifi_settings(wifi_credentials: update_wifi_body):
+    """
+    Changes the wifi SSID and password. Before running the permissions of the file have to be changed have to be changed running: sudo chmod 777 /etc/wpa_supplicant/wpa_supplicant.conf.
+    Reboots in at the end.
+    Parameters:
+        - SSID
+        - password
+    Returns: null
+    """
+
+    print(wifi_credentials.SSID, wifi_credentials.wifi_password)
+    CreateWifiConfig(wifi_credentials.SSID, wifi_credentials.wifi_password)
+
+    return
 
 # Corriendo app
 if __name__ == '__main__':

@@ -93,7 +93,7 @@ def broadcast_recording(function_name, states_path):
                 except:
                     pass
                 for j in range(config_universes):
-                    exec(f"artnet_object{ j }.set(list(map(int, recording{ j }[{ i }])))")  
+                    exec(f"artnet_object{ j }.set(list(map(int, recording{ j }[{ i }])))")
                 # Si el estado de la grabación esta en false, paramos la grabacion
                 if read_recording_state  == False:
                     print("Stopping broadcast...")

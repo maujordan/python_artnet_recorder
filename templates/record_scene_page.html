@@ -39,7 +39,7 @@
                 <div class="default text">Select amount of universes</div>
                 <i class="dropdown icon"></i>
                 <div class="menu">
-                    {% for i in range(1, 17) %}
+                    {% for i in range(1, 33) %}
                     <div class="item">
                         <i class="space shuttle icon"></i> {{ i }}
                     </div>
@@ -57,7 +57,7 @@
 <button class="positive huge ui button" onclick="call_record_endpoint('/new_recording/')"><i class="circle icon"></i> 
     Record
 </button>
-<button class="negative huge ui button" onclick="post_request('/stop_recording/');"><i class="stop icon"></i> 
+<button class="negative huge ui button" onclick="stop_recording_post_request('/stop_recording/');"><i class="stop icon"></i> 
     Stop
 </button>
 
