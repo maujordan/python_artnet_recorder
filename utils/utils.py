@@ -300,3 +300,17 @@ def CreateWifiConfig(SSID, password):
     os.popen("sudo reboot")
 
     return
+
+def create_folder_if_it_doesnt_exist(path):
+    """
+    Checks if a given folder path exists, if it doesn´t exist it creats it, if it exsists it does nothing.
+    """
+    if os.path.exists(path):
+        return
+    else:
+        try:
+            os.makedirs(path)
+            print(f"The directory {path} was created successfully.")
+        except OSError:
+            print(f"The directory {path} could not be created.")
+    return

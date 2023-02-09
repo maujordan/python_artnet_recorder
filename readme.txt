@@ -13,5 +13,9 @@
 
 
 ------------------------ Cronear on reboot ------------------------
+Corre la aplicacion al enceder la raspberry pi
 HOME=/home/maujordan
 @reboot cd /home/maujordan/Documents/python_artnet_recorder/ && python /home/maujordan/Documents/python_artnet_recorder/app.py
+
+------------------------ General ------------------------
+- Para correr la aplicacion es necesario crear la carpeta "recordings", en esta carpeta se almacenaran las grabaciones.
