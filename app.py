@@ -36,6 +36,10 @@ descriptions_path = os.path.join(dir_path, descriptions_file_name)
 json_config = get_json_file(config_path) 
 json_states = get_json_file(states_path) 
 
+#Checking that necessary files exist before running
+create_folder_if_it_doesnt_exist(recordings_path)
+
+
 # Ponemos todos los estados en false
 for key in list(json_states.keys()):
     change_json_file_value([key], states_path, False)
