@@ -24,7 +24,7 @@ def broadcast_recording(function_name, states_path):
         # Obteniendo la cantidad de universos que vamos a lanzar 
         config_universes = len(os.listdir(recordings_path)) # cantidad de archivos dentro del recording_path
         if config_universes == 0:
-            raise Exception("No recordings in this path")
+            print("No recordings in this path")
             return
 
         # Valores necesarios para mandar artner
@@ -82,32 +82,42 @@ def broadcast_recording(function_name, states_path):
         print("Broadcastings...")
         # Cargamos cada frame en cada uno de los universos
         read_recording_state = True
-        for i in range(min_packets):
-            # Leemos el estado de la grabacion antes de entrar en el loop
-            try:
-                read_recording_state = get_json_file(states_path)["read_recording"]
-                pass
-            except:
-                pass
-            for j in range(config_universes):
-                exec(f"artnet_object{ j }.set(list(map(int, recording{ j }[{ i }])))")  
-            # Si el estado de la grabación esta en false, paramos la grabacion
+        while True:
             if read_recording_state  == False:
-                print("Stopping broadcast...")
-                break
-            time.sleep(1/framerate) # 30 HZ
+                    break
+            for i in range(min_packets):
+                # Leemos el estado de la grabacion antes de entrar en el loop
+                try:
+                    read_recording_state = get_json_file(states_path)["read_recording"]
+                    pass
+                except:
+                    pass
+                for j in range(config_universes):
+                    exec(f"artnet_object{ j }.set(list(map(int, recording{ j }[{ i }])))")
+                # Si el estado de la grabación esta en false, paramos la grabacion
+                if read_recording_state  == False:
+                    print("Stopping broadcast...")
+                    # Cerrando los threads
+                    break
+
+                print(f"Frame: { i }/{ min_packets }", end='\r')
+                time.sleep(1/framerate) # 30 HZ
 
         # Mandando a 0 todos los canales
         # Cargamos cada frame en cada uno de los universos
         print("Sending 0 to all channels")
         for i in range(config_universes):
             exec(f"artnet_object{ i }.blackout()")    
-
+            exec(f"artnet_object{ i }.stop()")
+            exec(f"del artnet_object{ i }")        
+            
         end_time = time.time()
         print(f"Done!!! Execution time: { round((end_time - start_time)/60, 1) } minutes")
     except Exception as e:
         print("There was an error when trying to play the recording:\n", e)
+        change_json_file_value([function_name], states_path, False) # Cambiando estado de reproducción
         exit()
     
     change_json_file_value([function_name], states_path, False) # Cambiando estado de reproducción
+    
     return

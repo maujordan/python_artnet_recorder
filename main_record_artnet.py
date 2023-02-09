@@ -17,8 +17,11 @@ states_file_name = "states.json" # ombre del archivo que guarda estados
     # Recibe el status list y lo regresa cuando acabe de correr
 def record_artnet():
     
+    # Crea las variables globales que se necesitan para operar
     get_globals()
 
+    delete_directory(scene_path)
+    
     check_if_scene_path_exists(scene_path)
     # Poniendo el estado de la grabacion en el config file en true
     change_json_file_value(level=["currently_rcording"], config_path=config_path, value=True) 
@@ -28,8 +31,8 @@ def record_artnet():
         file_name = '{0:03}.csv'.format(i)
         exec(f"""
 def callback_u{ i }(data):
-    print('universo { i }:')
-    print(data)
+    print('Recording universe { i }:')
+    #print(data)
     save_in_csv(output_name= scene_path + '/' + '{ file_name }', list_to_append=data) # Guardamos en un csv
     return
         """)
@@ -38,7 +41,7 @@ def callback_u{ i }(data):
     for i in range(config_universes):
         file_name = '{0:03}.csv'.format(i)
         # Si el archivo existe lo borramos
-        os.remove(scene_path + '/' + file_name) if os.path.exists(scene_path + '/' + file_name) else print("Archivo no existe todavía")
+        os.remove(scene_path + '/' + file_name) if os.path.exists(scene_path + '/' + file_name) else print(f"{ i } Archivo no existe todavía")
 
     # Creando servidor
     server = StupidArtnetServer()
@@ -46,10 +49,10 @@ def callback_u{ i }(data):
     # Creando listeners para la cantidad de universos que hay en el config.json, por ahora maximo 16
     for i in range(config_universes):
         exec(f"""
-u{ i }_listener = server.register_listener(universe={ i }, callback_function=callback_u{ i })
+u{ i }_listener = server.register_listener(universe={ i }, callback_function=callback_u{ i }) 
         """)
 
-    
+        
     
     go_on = True
     while go_on == True:
@@ -61,6 +64,12 @@ u{ i }_listener = server.register_listener(universe={ i }, callback_function=cal
             print("\nParamos grabacion")
             server.delete_all_listener()
             change_json_file_value(level=["new_recording"], config_path=states_path, value=False) # Cambiando el estado de la grabacion a false
+    # Limpiando el servidor cuando teminamos
+    # Creando listeners para la cantidad de universos que hay en el config.json, por ahora maximo 16
+    for i in range(config_universes):
+        exec(f"server.delete_listener(u{ i }_listener)")
+        exec(f"""del u{ i }_listener""")
+        
     del server
     
     

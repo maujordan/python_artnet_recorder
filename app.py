@@ -2,41 +2,36 @@
 # uvicorn app:app --reload --> Cada vez que guarda el archivo refresca el servidor uvicorn 
 # 
 
-from fastapi import FastAPI, Request, BackgroundTasks, Depends
+from fastapi import FastAPI, Request, BackgroundTasks
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from pathlib import Path
 from pydantic import BaseModel
-from typing import Text, Optional # Objetos de tipo texto
-from datetime import datetime
-from uuid import uuid4 as uuid
-from main_send_recording import broadcast_recording
-from inspect import signature
-from main_record_artnet import record_artnet
-import time
-import asyncio
 import uvicorn
 import inspect
 # User functions
+from main_send_recording import broadcast_recording
+from main_record_artnet import record_artnet
 from utils.utils import *
-from testing_file import * 
+
 
 # Declarando templates
 templates = Jinja2Templates(directory="templates")
 
 
-
 # Files and folders names
 config_file_name = "config.json" # Nombre del config file
+descriptions_file_name = "descriptions.json" # Nombre del file que contiene descrpciones de las grabaciones
 recordings_folder_name = "recordings" # Nombre del recordings folder
 states_file_name = "states.json" # ombre del archivo que guarda estados
 static_folder_name = "static"
+
 # Paths
-dir_path = os.path.dirname(__file__) # Directoro
+dir_path = os.path.abspath('')
 recordings_path = os.path.join(dir_path, recordings_folder_name) 
 config_path = os.path.join(dir_path, config_file_name)
 states_path = os.path.join(dir_path, states_file_name)
 static_folder_path = os.path.join(dir_path, static_folder_name)
+descriptions_path = os.path.join(dir_path, descriptions_file_name)
 # Json
 json_config = get_json_file(config_path) 
 json_states = get_json_file(states_path) 
@@ -49,6 +44,10 @@ for key in list(json_states.keys()):
 class scene(BaseModel):
     scene_number: int
     universes: int 
+
+class config_change(BaseModel):
+    lista_campo: list
+    value: str
 
 
 # Creando app para conectarnos
@@ -70,9 +69,12 @@ def home_page(request: Request):
     """
     Displays the main page of the webserver
     """
-    
+
+    direccion_ip = get_ip_address()
+
     return templates.TemplateResponse("home.html", {
-        "request": request
+        "request": request,
+        "ip_address": direccion_ip
     })
     
 # Broadcast scene page
@@ -82,8 +84,10 @@ def broadcast_page(request: Request):
     Displays de broadcast section
     """
     
-    recordings_info = get_recordings_info(recordings_path)["content"]
-    print(recordings_info)
+    recordings_details = get_recordings_info(recordings_path, descriptions_path)
+    recordings_info = recordings_details["content"] # Obteniendo informacion de cuantos universos hay por escena
+    recordings_descriptions = recordings_details["descriptions"] # Obteniendo descripciones de escenas
+    
     # Obteniendo las grabaciones que tienen mas de 0 universos
     non_empty_recordings_list = []
     for k in recordings_info.keys():
@@ -92,7 +96,8 @@ def broadcast_page(request: Request):
 
     return templates.TemplateResponse("broadcast.html", {
         "request": request,
-        "recordings_info": recordings_info
+        "recordings_info": recordings_info,
+        "recordings_descriptions": recordings_descriptions
     })
 
 
@@ -103,7 +108,7 @@ def record_page(request: Request):
     Displays the recording new scenes page
     Here you the user is able to record new scenes
     """
-    scenes_to_display = 20
+    scenes_to_display = 40
     recordings_info = get_recordings_info(recordings_path)["content"]
     # Creando diccionario con n cantidad de posibles escenas para grabar
     scenes = {}
@@ -120,14 +125,6 @@ def record_page(request: Request):
         "scenes_info": scenes
     })
     
-
-
-
-
-
-
-
-
 
 
 # Creando petición get para obtener numero de grabaciones y cuantos universos contiene cada una
@@ -163,11 +160,17 @@ def read_recording(recording_number: str, request: Request, brackground_tasks: B
     elif get_json_file(states_path)["new_recording"] == False: 
         change_json_file_value([function_name], states_path, True) # Cambiando estado de los estados a true
         change_json_file_value(level = ["selected_scene"], config_path = config_path, value=recording_number) # Seleccionando escena a reproducir
+        # Si hay 0 universos en el folder, no corremos funcion
+        if get_number_of_universes_in_recording(recordings_path + f'/scene_{ recording_number }') == 0:
+            change_json_file_value([function_name], states_path, False) # Cambiando estado de los estados a true
+            return {"message":{"There´s nothing in:": f"scene_{ recording_number }"}}
+
         brackground_tasks.add_task(broadcast_recording, function_name, states_path) # Reproduciendo escena
         return {"message":{"Playing recording:": recording_number}}
     
     # Cualquier otro caso es error
     else:
+        change_json_file_value([function_name], states_path, False) # Cambiando estado de reproducción
         return {"message": {"Error:": "There was an error while trying to read and broadcast recording"}}
 
 
@@ -226,7 +229,103 @@ async def stop_broadcasting():
     return response
 
 
+# Cambia un valor del config.json
+@recorder_app.post('/change_config_value/')
+async def endpoint_change_config_value(field_to_change: config_change):
+    """
+    Cambia algun valor del config file
+    """
+    function_name = inspect.stack()[0][3]
+    # Manejo de estados
+    # Si ya esta corriendo no ejecutamos
+    if get_json_file(states_path)[function_name] == True: 
+        return {"message": "This request is already running, please wait"}
+    # si no esta corriendo ejecutamos
+    else:
+        change_json_file_value([function_name], states_path, True) # estado running
+        change_json_file_value(field_to_change.lista_campo, config_path, field_to_change.value) # Cambiando la ip
+        change_json_file_value([function_name], states_path, False) # estado not running
+
+    return {"message": f"Succesfully changed '{ field_to_change.lista_campo[-1] }' field to '{ field_to_change.value }'"}
 
 
+# Busca los dispositivos conectados  la red
+class NetworkDevice(BaseModel):
+    ip_address: str
+    ac_address: str
+
+@recorder_app.get('/find_devices_on_network/')
+async def find_devices_on_network():
+    """
+    ARREGLAR
+    Corre un "arp -a" para buscar los dispositivos conectados a la red.
+    Returns: lista con listas [[ip1, mac1], [ip2, mac2]]
+    """
+    
+    """
+    # Manejo de estados
+    # Si ya esta corriendo no ejecutamos
+    function_name = inspect.stack()[0][3]
+    if get_json_file(states_path)[function_name] == True: 
+        return {"message": "This request is already running, please wait"}
+    # si no esta corriendo ejecutamos
+    else:
+        change_json_file_value([function_name], states_path, True) # estado running
+        # Aqui ejecutamos las acciones
+        devices_on_network = find_devices_on_network()
+        change_json_file_value([function_name], states_path, False) # estado not running
+
+    return {"message": devices_on_network}
+    """
+
+
+@recorder_app.delete('/delete_scene/{scene_to_delete}')
+def delete_scene_endpoint(scene_to_delete: int):
+    """
+    Elimina alguna escena que este grabada
+    Recibe la escena a eliminar a manera de int.
+    """
+    result = delete_scene(recordings_path, f"scene_{ scene_to_delete }")
+    result = 1
+    if result == 1:
+        return {"message": f"scene_{ scene_to_delete } deleted!"}
+    elif result == 0:
+        return {"message": f"Couldn´t delete. scene_{ scene_to_delete } doesn´t exist yet!"}
+    else:
+        return {"ERROR"}
+
+
+class update_body(BaseModel):
+    scene_to_update: str
+    description_message: str
+@recorder_app.post('/update_recording_description/')
+def update_recording_description(update_info: update_body):
+
+    update_description_file(update_info.scene_to_update, text_to_place=update_info.description_message)    
+
+    return {"message": f"Updated description for scene '{ update_info.scene_to_update }' to: { update_info.description_message }"}
+    
+
+class update_wifi_body(BaseModel):
+    SSID: str
+    wifi_password: str
+@recorder_app.post('/change_wifi_settings/')
+def change_wifi_settings(wifi_credentials: update_wifi_body):
+    """
+    Changes the wifi SSID and password. Before running the permissions of the file have to be changed have to be changed running: sudo chmod 777 /etc/wpa_supplicant/wpa_supplicant.conf.
+    Reboots in at the end.
+    Parameters:
+        - SSID
+        - password
+    Returns: null
+    """
+
+    print(wifi_credentials.SSID, wifi_credentials.wifi_password)
+    CreateWifiConfig(wifi_credentials.SSID, wifi_credentials.wifi_password)
+
+    return
+
+# Corriendo app
 if __name__ == '__main__':
     uvicorn.run("app:recorder_app", host="0.0.0.0", port=8000, reload=True)
+    #uvicorn.run("app:recorder_app", host="0.0.0.0", port=8000)

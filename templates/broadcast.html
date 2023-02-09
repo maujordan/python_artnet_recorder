@@ -2,37 +2,105 @@
 
 {% block content %}
 
+<button class="ui orange button" onclick="open_ip_modal()">
+    <i class="magic icon"></i> Change IP Adress
+</button>
+<button class="ui red button" onclick="stop_broadcast()">
+    <i class="stop icon"></i> Stop
+</button>
 <table class="ui celled padded table">
     <thead>
         <tr>
             <th class="center aligned", >Scene</th>
             <th class="center aligned", >Universes</th>
+            <th class="center aligned", >Description</th>
+            <th class="center aligned", >Delete</th>
         </tr>
     </thead>
     <tbody>
         {% for key, value in recordings_info.items() %}
+
+        
+        
         {% if value > 0 %}
-        <tr>
-            <td class="center aligned">
-                <button class="ui primary button" value="{{ key }}" onclick="play_scene(value)">
-                    <i class="play icon"></i> Scene no. {{ key }}
-                </button>
-            </td>
-            <td class="center aligned"> {{ value }} universes </td>
-        </tr>
-        {% endif %}
+            <tr>
+                <td class="center aligned">
+                    <button class="ui primary button" value="{{ key }}" onclick="play_scene(value)">
+                        <i class="play icon"></i> Scene no. {{ key }}
+                    </button>
+                </td>
+                <td class="center aligned"> 
+                    {{ value }} universes
+                </td>
+                <td class="center aligned"> 
+                    <button class="ui compact icon button" value="{{ key }}"  onclick="open_description_modal(value)"><i class="pencil icon"></i></button> 
+                    {{ recordings_descriptions[key] }}
+                </td>
+                <td class="center aligned"> 
+                    <button class="ui compact red icon button" value="{{ key }}" onclick="call_delete_scene_endpoint(value)"><i class="trash alternate icon"></i></button> 
+                </td>
+                
+            </tr>
+            {% endif %}
+        
         {% endfor %}
         
     </tbody>
     <tfoot>
         <tr><th colspan="5">
-            <button class="ui red button" onclick="stop_broadcast()">
-                <i class="stop icon"></i> Stop
-            </button>
+
         </th>
         
     </tr></tfoot>
     
 </table>
+
+<div class="ui basic modal" id="modal_cambiar_ip">
+    <div class="ui header">
+        <i class="rss icon"></i>
+        Change IP Adress to bradcast
+    </div>
+    <div class="content">
+        <div class="ui huge icon input">
+            <input type="text" placeholder="IP Adress..." id="ip_input">
+            <i class="rss icon"></i>
+        </div>
+        <p>Type the IP adress that will receive the artnet signal</p>
+    </div>
+    <div class="actions">
+        <div class="ui massive red basic cancel inverted button">
+            <i class="remove icon"></i>
+            Cancel
+        </div>
+        <div class="ui massive green ok inverted button" id="done_button" onclick="save_new_ip()">
+            <i class="checkmark icon"></i>
+            Done
+        </div>
+    </div>
+</div>
+
+
+<div class="ui modal" id="edit_description_modal">
+    <i class="close icon" onclick="clear_description_var()"></i>
+    <div class="header" id="change_description_header">
+        Modal Title
+    </div>
+    
+    <div class="ui form">
+        <div class="field">
+            <label>Type description:</label>
+            <textarea rows="4" id="description_text"></textarea>
+        </div>
+    </div>
+
+    <div class="ui button" id="cancel_modal_description">Cancel</div>
+    <div class="ui button" id="save_description" data-value="box1" onclick="save_scene_description()">Save</div>
+</div>
+</div>
+
+
+
+<script src="../static/functions_ip.js"></script>
+<script src="../static/my_js_functions.js"></script>
 
 {% endblock %}

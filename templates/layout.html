@@ -1,6 +1,8 @@
+<!-- Template basico -->
 <!DOCTYPE html>
 <html >
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1"> <!-- Esta linea es para que sea responsive en el celular -->
     <title>Kyber Artnet Recorder</title>
     <link rel="stylesheet" href="../static/Semantic-UI-CSS-master/semantic.min.css">
     <script src="../static/jquery-3.6.1.min.js"></script>
@@ -9,12 +11,23 @@
 </head>
 <body>
     <div class="ui container">
-        <h1 class="ui massive header" onclick="go_to_page('/')">
+        <h1 class="ui header" onclick="go_to_page('/')">
             <img class="ui massive centered image" src="/static/images/kyber_header_logo.png" onclick="go_to_page('/')">
             <div class="content">
                 Artnet Recorder
             </div>
         </h1>
+        {% if  ip_address != null %}
+        <div class="ui mini icon message">
+            <i class="microchip icon"></i>
+            <div class="content">
+              <div class="mini header">
+                Device running at: {{ ip_address }}
+              </div>
+            </div>
+          </div>
+        {% endif %}
+
         
         {% block content %}
         {% endblock %}
